@@ -1,0 +1,7 @@
+requests
+pyttsx3
+wave
+yt_dlp
+PyQt6
+moviepy
+vosk

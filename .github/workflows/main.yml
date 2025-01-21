@@ -1,10 +1,10 @@
 name: Build Program with Cython
 
 on:
-  #push:
-  release:
+  push:
     branches: [main]
-
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Cython PYD
-        run: python setup.py build_ext --inplace
+        run: python build/build_dependancies/setup.py build_ext --inplace
       - name: Commit and push PYD file
         run: |
           git config --local user.name "GitHub Actions"

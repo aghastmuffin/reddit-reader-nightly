@@ -1,0 +1,52 @@
+name: Build Program with Cython
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Check for looping commit
+        id: check_loop
+        shell: pwsh
+        run: |
+          Write-Host "Checking for loop..."
+          $commitMessage = git log -1 --pretty=%B
+          if ($commitMessage -match "\[skip ci\]") {
+            Write-Host "Loop check passed. Skipping build."
+            echo "skip_build=true" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "No loop detected."
+            echo "skip_build=false" >> $env:GITHUB_ENV
+          }
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cython numpy
+          pip install -r requirements.txt
+
+      - name: Build Cython PYD
+        run: python setup.py build_ext --inplace
+      - name: Commit and push PYD file
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add *.pyd
+          git commit -m "Add built .pyd file"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
